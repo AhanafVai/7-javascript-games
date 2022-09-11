@@ -7,14 +7,15 @@ const boardWidth = 560;
 const boardHeight = 300;
 let xDirection = -2;
 let yDirection = 2;
-
-// starting positions
+// star values
 const userStart = [230, 10];
 let currentPosition = userStart;
 
 const ballStart = [270, 40];
 let ballCurrentPosition = ballStart;
 
+let timerId;
+let score = 0;
 // create block
 class Block {
   constructor(xAxis, yAxis) {
@@ -108,16 +109,49 @@ const moveBall = () => {
   checkCollisions();
 };
 
-timerId = setInterval(moveBall, 30);
+const startGame = () => {
+  timerId = setInterval(moveBall, 20);
+};
 
-// check for collisions
+// check for block collisions
 const checkCollisions = () => {
   // check for wall collisions
+  blocks.forEach((block, i) => {
+    if (
+      ballCurrentPosition[0] > block.bottomLeft[0] &&
+      ballCurrentPosition[0] < block.bottomRight[0] &&
+      ballCurrentPosition[1] + ballDiameter > block.bottomLeft[1] &&
+      ballCurrentPosition[1] < block.topLeft[1]
+    ) {
+      const allBlocks = [...document.querySelectorAll(".block")];
+      allBlocks[i].classList.remove("block");
+      blocks.splice(i, 1);
+      changeDirection();
+      scoreDisplay.innerHTML = score++;
+    }
+
+    // win
+    if (blocks.length === 0) {
+      clearInterval(timerId);
+      scoreDisplay.textContent = "you win";
+      document.removeEventListener("keydown", moveUser);
+    }
+  });
 
   if (
     ballCurrentPosition[0] >= boardWidth - ballDiameter ||
     ballCurrentPosition[0] <= 0 ||
     ballCurrentPosition[1] >= boardHeight - ballDiameter
+  ) {
+    changeDirection();
+  }
+
+  // User collisions
+  if (
+    ballCurrentPosition[0] > currentPosition[0] &&
+    ballCurrentPosition[0] < currentPosition[0] + blockWidth &&
+    ballCurrentPosition[1] > currentPosition[1] &&
+    ballCurrentPosition[1] < currentPosition[1] + blockHeight
   ) {
     changeDirection();
   }
